@@ -5,9 +5,16 @@ Seeds 20 specific chemicals per category and discovers others.
 
 import logging
 import sys
-from database import Database
-from pubchem_service import PubChemService
-from chemical_categorizer import ChemicalCategorizer
+
+# Import backend modules - handle both package and direct execution
+try:
+    from backend.database import Database
+    from backend.pubchem_service import PubChemService
+    from backend.chemical_categorizer import ChemicalCategorizer
+except ImportError:
+    from database import Database
+    from pubchem_service import PubChemService
+    from chemical_categorizer import ChemicalCategorizer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

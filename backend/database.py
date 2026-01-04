@@ -11,7 +11,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from formula_formatter import format_formula
+# Import backend modules - handle both package and direct execution
+try:
+    from backend.formula_formatter import format_formula
+except ImportError:
+    from formula_formatter import format_formula
 
 Base = declarative_base()
 

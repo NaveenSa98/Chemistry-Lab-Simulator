@@ -153,6 +153,12 @@ DB_PASSWORD=1234
 
 ### Build Fails
 
+**Error: "No module named 'reaction_engine'" or similar import errors**
+- This has been fixed in the code with flexible imports
+- Make sure you have the latest version with `backend/__init__.py` file
+- Ensure your start command is: `gunicorn --bind 0.0.0.0:$PORT backend.app:app`
+- The code now handles both package-style imports (production) and direct imports (local development)
+
 **Error: "No module named 'backend'"**
 - Solution: Make sure your start command is: `gunicorn --bind 0.0.0.0:$PORT backend.app:app`
 

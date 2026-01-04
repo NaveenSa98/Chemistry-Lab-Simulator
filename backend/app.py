@@ -11,10 +11,20 @@ This backend provides REST API endpoints for:
 
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from reaction_engine import ReactionEngine
-from database import Database
-from pubchem_service import PubChemService
-from chemical_categorizer import ChemicalCategorizer
+
+# Import backend modules - handle both package and direct execution
+try:
+    # When run as a package (production with gunicorn)
+    from backend.reaction_engine import ReactionEngine
+    from backend.database import Database
+    from backend.pubchem_service import PubChemService
+    from backend.chemical_categorizer import ChemicalCategorizer
+except ImportError:
+    # When run directly from backend directory (local development)
+    from reaction_engine import ReactionEngine
+    from database import Database
+    from pubchem_service import PubChemService
+    from chemical_categorizer import ChemicalCategorizer
 
 # Initialize Flask app with frontend assets paths
 app = Flask(__name__,

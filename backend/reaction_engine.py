@@ -19,8 +19,14 @@ it calculates the next reaction automatically (cascading reactions).
 """
 
 import logging
-from chemistry_rules import ChemistryRules
-from llm_service import LLMService
+
+# Import backend modules - handle both package and direct execution
+try:
+    from backend.chemistry_rules import ChemistryRules
+    from backend.llm_service import LLMService
+except ImportError:
+    from chemistry_rules import ChemistryRules
+    from llm_service import LLMService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
