@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ChemLab | Virtual Simulator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-left">
+                <h1>AI ChemLab</h1>
+                <div class="inventory-dropdown">
+                    <button id="inventory-btn" class="inventory-btn">🧪 Chemical Inventory</button>
+                    <div id="inventory-menu" class="inventory-menu">
+                        <!-- Chemical categories will be loaded dynamically via chemicals.js -->
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="reset-btn" class="reset-btn">Empty Beaker</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="lab-bench" id="canvas-container">
+                <!-- p5.js canvas will be inserted here -->
+            </div>
+
+            <aside class="sidebar">
+                <section class="lab-controls">
+                    <h2>Lab Controls</h2>
+
+                    <div class="quantity-selector">
+                        <label for="amount-slider">Amount (ml): <span id="amount-val">50</span></label>
+                        <input type="range" id="amount-slider" min="10" max="100" value="50" step="10">
+                    </div>
+
+                    <div class="condition-controls">
+                        <div class="control-group">
+                            <label class="switch">
+                                <input type="checkbox" id="burner-toggle">
+                                <span class="slider round burner"></span>
+                            </label>
+                            <span>🔥 Bunsen Burner</span>
+                        </div>
+                        <div class="control-group">
+                            <label class="switch">
+                                <input type="checkbox" id="ice-toggle">
+                                <span class="slider round ice"></span>
+                            </label>
+                            <span>❄️ Ice Bath</span>
+                        </div>
+                        <div class="control-group">
+                            <label class="switch">
+                                <input type="checkbox" id="conc-toggle">
+                                <span class="slider round conc"></span>
+                            </label>
+                            <span>🧪 Concentrated</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="example-reactions">
+                    <h2>Example Reactions</h2>
+                    <p class="section-subtitle">Try these exciting reactions!</p>
+
+                    <div class="reaction-cards">
+                        <div class="reaction-card" data-reaction="neutralization">
+                            <div class="reaction-icon">⚗️</div>
+                            <h4>Acid-Base Neutralization</h4>
+                            <p class="reaction-desc">HCl + NaOH</p>
+                            <span class="difficulty easy">Beginner</span>
+                            <button class="try-btn">Try It!</button>
+                        </div>
+
+                        <div class="reaction-card" data-reaction="indicator">
+                            <div class="reaction-icon">🎨</div>
+                            <h4>Color Change</h4>
+                            <p class="reaction-desc">Phenolphthalein + NaOH</p>
+                            <span class="difficulty easy">Beginner</span>
+                            <button class="try-btn">Try It!</button>
+                        </div>
+
+                        <div class="reaction-card" data-reaction="bubbling">
+                            <div class="reaction-icon">💨</div>
+                            <h4>Bubbling Gas</h4>
+                            <p class="reaction-desc">Mg + HCl</p>
+                            <span class="difficulty easy">Beginner</span>
+                            <button class="try-btn">Try It!</button>
+                        </div>
+
+                        <div class="reaction-card" data-reaction="precipitate">
+                            <div class="reaction-icon">🔵</div>
+                            <h4>Blue Precipitate</h4>
+                            <p class="reaction-desc">CuSO₄ + NaOH</p>
+                            <span class="difficulty medium">Intermediate</span>
+                            <button class="try-btn">Try It!</button>
+                        </div>
+
+                        <div class="reaction-card" data-reaction="temperature">
+                            <div class="reaction-icon">🔥</div>
+                            <h4>Temperature Effect</h4>
+                            <p class="reaction-desc">Cu + H₂SO₄ (hot)</p>
+                            <span class="difficulty medium">Intermediate</span>
+                            <button class="try-btn">Try It!</button>
+                        </div>
+
+                        <div class="reaction-card" data-reaction="sodium">
+                            <div class="reaction-icon">💥</div>
+                            <h4>Vigorous Reaction</h4>
+                            <p class="reaction-desc">Na + H₂O</p>
+                            <span class="difficulty medium">Intermediate</span>
+                            <button class="try-btn">Try It!</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="info-panel">
+                    <!-- Tabs for switching between views -->
+                    <div class="panel-tabs">
+                        <button class="tab-btn active" data-tab="results">📊 Results</button>
+                        <button class="tab-btn" data-tab="details">📚 Details</button>
+                    </div>
+
+                    <!-- Results Tab: Shows reaction outcome -->
+                    <div class="glass-card" id="results-panel" data-tab-content="results">
+                        <h3>Reaction Results</h3>
+                        <p id="status-message" class="status-idle">Drop chemicals to start an experiment...</p>
+
+                        <!-- Products Section -->
+                        <div id="products-section" class="hidden">
+                            <h4>🧬 What Happened?</h4>
+                            <p id="reaction-equation" class="equation-display"></p>
+
+                            <div class="result-grid">
+                                <div class="result-item">
+                                    <span class="result-label">Type of Reaction:</span>
+                                    <span id="reaction-type" class="result-value">-</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">pH Level:</span>
+                                    <span id="ph-display" class="result-value">-</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Observable Changes:</span>
+                                    <span id="symptoms-display" class="result-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Tab: Shows explanation and safety -->
+                    <div class="glass-card" id="details-panel" data-tab-content="details" style="display: none;">
+                        <h3>Learn More</h3>
+
+                        <h4>💡 Chemistry Concept</h4>
+                        <p id="concept-display" class="concept-tag">-</p>
+                        <p id="ai-explanation" class="explanation-text">Waiting for reaction...</p>
+
+                        <hr>
+
+                        <h4>⚠️ Safety Tips</h4>
+                        <p id="safety-tips" class="safety-text">Always wear appropriate safety equipment like gloves.</p>
+
+                        <div class="real-world-box">
+                            <strong>🌍 Real World Application</strong>
+                            <p id="real-world-example">-</p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Tutorial Popup Modal -->
+    <div id="tutorial-modal" class="tutorial-modal">
+        <div class="tutorial-content">
+            <button class="tutorial-close" id="tutorial-close">&times;</button>
+            <h2>Welcome to AI ChemLab!</h2>
+            <p class="tutorial-intro">Let's learn how to use the virtual chemistry lab in 4 easy steps</p>
+
+            <div class="tutorial-steps">
+                <div class="tutorial-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Select Chemicals</h3>
+                        <p>Click the "🧪 Chemical Inventory" button to browse available chemicals by category</p>
+                        <div class="step-visual">📋 → 🧪</div>
+                    </div>
+                </div>
+
+                <div class="tutorial-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Add to Beaker</h3>
+                        <p>Drag chemicals to the beaker or click "Add to Beaker". Adjust the amount using the slider (10-100ml)</p>
+                        <div class="step-visual">🧪 → 🥤</div>
+                    </div>
+                </div>
+
+                <div class="tutorial-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Control Conditions</h3>
+                        <p>Toggle the Bunsen Burner (heat), Ice Bath (cold), or Concentrated solution to change reaction conditions</p>
+                        <div class="step-visual">🔥 ❄️ 🧪</div>
+                    </div>
+                </div>
+
+                <div class="tutorial-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Observe & Learn</h3>
+                        <p>Watch the reaction animation, check the Results tab for data, and read the Details tab for explanations!</p>
+                        <div class="step-visual">📊 → 📚</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tutorial-footer">
+                <div class="tutorial-tip">
+                    <strong>💡 Pro Tip:</strong> Start with the "Example Reactions" panel on the right to try pre-configured experiments!
+                </div>
+                <div class="tutorial-actions">
+                    <label class="tutorial-checkbox">
+                        <input type="checkbox" id="dont-show-again">
+                        <span>Don't show this again</span>
+                    </label>
+                    <button class="tutorial-start-btn" id="tutorial-start">Start Experimenting!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/chemicals.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/particles.js"></script>
+    <script src="/static/js/sketch.js"></script>
+    <script src="/static/js/tutorial.js"></script>
+</body>
+
+</html>
