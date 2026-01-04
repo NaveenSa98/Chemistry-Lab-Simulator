@@ -49,11 +49,33 @@ class Chemical(Base):
 
 class Database:
     """Database connection and operations manager."""
-    
+
     def __init__(self):
         # Use environment variable or default to local PostgreSQL
         db_url = os.getenv('DATABASE_URL')
-        self.engine = create_engine(db_url)
+
+        # Fix postgres:// to postgresql:// for newer SQLAlchemy versions
+        # Render provides postgres:// but SQLAlchemy 1.4+ requires postgresql://
+        if db_url and db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+
+        # Configure connection with SSL and connection pooling
+        connect_args = {}
+
+        # Add SSL requirement for production databases (Render, AWS, etc.)
+        # Local databases typically don't use SSL
+        if db_url and not db_url.startswith('postgresql://localhost'):
+            connect_args['sslmode'] = 'require'
+
+        # Create engine with robust connection handling
+        self.engine = create_engine(
+            db_url,
+            connect_args=connect_args,
+            pool_pre_ping=True,  # Verify connections before using them
+            pool_recycle=300,     # Recycle connections after 5 minutes
+            pool_size=5,          # Connection pool size
+            max_overflow=10       # Additional connections when pool is exhausted
+        )
         self.Session = sessionmaker(bind=self.engine)
     
     def create_tables(self):

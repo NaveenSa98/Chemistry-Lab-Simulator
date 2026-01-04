@@ -166,6 +166,15 @@ DB_PASSWORD=1234
 - Solution: Verify DATABASE_URL is correctly set in environment variables
 - Make sure you're using the **Internal Database URL** from Render
 
+**Error: "SSL connection has been closed unexpectedly" (psycopg2.OperationalError)**
+- This has been fixed in the code with proper SSL configuration
+- The app now automatically:
+  - Converts `postgres://` URLs to `postgresql://` (required by SQLAlchemy 1.4+)
+  - Enables SSL for remote databases
+  - Uses connection pooling with pre-ping to detect stale connections
+  - Recycles connections every 5 minutes to prevent timeouts
+- If you still see this error, check that your Render database is active (not expired)
+
 ### App Crashes on Start
 
 **Check logs:**
