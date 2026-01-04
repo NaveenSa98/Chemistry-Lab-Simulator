@@ -29,7 +29,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    padding: 20px;
+    padding: 15px 20px;
 }
 
 header {
@@ -144,7 +144,7 @@ main {
     display: grid;
     grid-template-columns: 1fr 350px;
     gap: 20px;
-    padding-top: 20px;
+    padding-top: 10px;
 }
 
 .lab-controls {
@@ -170,8 +170,9 @@ main {
     box-shadow: var(--card-shadow);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     overflow: hidden;
+    padding-top: 20px;
 }
 
 /* Switch Styles */
