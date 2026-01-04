@@ -1,0 +1,27 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: chemlab-db
+    env: python
+    plan: free
+    databases:
+      - name: chemlab
+        databaseName: chemlab
+        user: chemlab_user
+
+  # Flask Web Service
+  - type: web
+    name: chemistry-lab-simulator
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT backend.app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chemlab
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
