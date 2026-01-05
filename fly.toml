@@ -1,6 +1,3 @@
-# fly.toml app configuration file generated for chemistry-lab-simulator
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-
 app = "chemistry-lab-simulator"
 primary_region = "iad"
 
