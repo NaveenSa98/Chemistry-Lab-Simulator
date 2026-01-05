@@ -58,11 +58,10 @@ An interactive, AI-powered virtual chemistry laboratory that allows students to 
 ### Database
 
 - **PostgreSQL**: Production database for chemical storage
-- **Render PostgreSQL**: Managed database hosting
 
 ## Live Demo
 
-[(https://chemistry-lab-simulator.onrender.com/)]
+[(https://chemistry-lab-simulator.up.railway.app/)]
 
 ## Screenshots
 
@@ -148,41 +147,6 @@ python backend/app.py
 
 The application will be available at `http://localhost:5000`
 
-## Project Structure
-
-```text
-Chemistry-Lab-Simulator/
-├── backend/
-│   ├── app.py                    # Flask application and API routes
-│   ├── database.py               # Database models and configuration
-│   ├── reaction_engine.py        # Hybrid reaction prediction engine
-│   ├── chemistry_rules.py        # Rule-based reaction database
-│   ├── llm_service.py           # Google Gemini AI integration
-│   ├── pubchem_service.py       # PubChem API wrapper
-│   ├── chemical_categorizer.py  # AI-powered chemical classification
-│   ├── formula_formatter.py     # Chemical formula formatting
-│   └── seed_chemicals.py        # Database seeding script
-├── frontend/
-│   ├── static/
-│   │   ├── css/
-│   │   │   └── style.css        # Main stylesheet
-│   │   └── js/
-│   │       ├── sketch.js        # p5.js beaker visualization
-│   │       ├── api.js           # Backend API communication
-│   │       ├── chemicals.js     # Chemical inventory UI
-│   │       ├── particles.js     # Particle system for effects
-│   │       └── tutorial.js      # Tutorial modal logic
-│   └── templates/
-│       └── index.html           # Main HTML template
-├── .env.example                 # Environment variables template
-├── .gitignore                   # Git ignore rules
-├── requirements.txt             # Python dependencies
-├── Procfile                     # Render deployment config
-├── render.yaml                  # Render infrastructure as code
-├── LICENSE                      # MIT License
-└── Readme.md                    # This file
-```
-
 ## Usage Guide
 
 ### For Students
@@ -208,22 +172,18 @@ Chemistry-Lab-Simulator/
 
 ## Deployment
 
-### Render Deployment
+### Railway Deployment
 
-This project is configured for one-click deployment on Render.
+This project is configured for one-click deployment on Railway.
 
 1. **Fork this repository**
-
-1. **Create a new Web Service on Render**
-   - Connect your GitHub repository
-   - Render will auto-detect the `render.yaml` configuration
 
 1. **Add environment variables**
    - `GOOGLE_API_KEY`: Your Google AI API key
    - `DATABASE_URL`: Auto-configured by Render PostgreSQL
 
 1. **Deploy**
-   - Render will automatically:
+   - Railway will automatically:
      - Create a PostgreSQL database
      - Install dependencies
      - Start the Flask application with Gunicorn
