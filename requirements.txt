@@ -2,7 +2,7 @@ flask
 flask-cors
 requests
 python-dotenv
-google-genai
+groq
 psycopg2-binary
 sqlalchemy
 pubchempy

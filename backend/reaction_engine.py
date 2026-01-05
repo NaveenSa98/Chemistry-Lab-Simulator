@@ -217,25 +217,65 @@ class ReactionEngine:
         # STEP 8: Merge data into final response
         viz = educational_content.get("visual_metadata", {})
 
-        # Combine visual triggers: Hardcoded chemistry rules take priority
-        triggers = reaction_data.get("animation_triggers", {})
-        final_triggers = {
-            "bubbles": triggers.get("bubbles", viz.get("bubbles", False)),
-            "precipitate": triggers.get("precipitate", viz.get("precipitate", False)),
-            "heat": triggers.get("heat", viz.get("heat", False)),
-            "color_change": triggers.get("color_change", viz.get("color_change", None))
-        }
+        # Combine visual triggers:
+        # - If reaction is in database (triggers not None): use hardcoded rules as primary, LLM as fallback
+        # - If reaction NOT in database (triggers is None): use LLM as primary source
+        triggers = reaction_data.get("animation_triggers")
+
+        if triggers is None:
+            # Unknown reaction - trust the LLM's analysis
+            final_triggers = {
+                "bubbles": viz.get("bubbles", False),
+                "precipitate": viz.get("precipitate", False),
+                "heat": viz.get("heat", False),
+                "color_change": viz.get("color_change", None),
+                "gas_smoke": viz.get("gas_smoke", False)
+            }
+        else:
+            # Known reaction - use hardcoded rules as primary, LLM as fallback
+            final_triggers = {
+                "bubbles": triggers.get("bubbles", viz.get("bubbles", False)),
+                "precipitate": triggers.get("precipitate", viz.get("precipitate", False)),
+                "heat": triggers.get("heat", viz.get("heat", False)),
+                "color_change": triggers.get("color_change", viz.get("color_change", None)),
+                "gas_smoke": triggers.get("gas_smoke", viz.get("gas_smoke", False))
+            }
 
         # Determine what particle effect to show
         p_type = reaction_data.get("particle_type", "none")
-        if p_type == "none":
-            # Auto-select particle type based on triggers
+
+        # If gas_smoke is detected, always show smoke effect with bubbles
+        if final_triggers.get("gas_smoke", False):
+            # Override particle type for smoke/vapor visualization
+            p_type = "smoke"
+        elif p_type == "none":
+            # Auto-select particle type based on other triggers
             if final_triggers["bubbles"]:
                 p_type = "bubble"  # Gas being released
             elif final_triggers["precipitate"]:
                 p_type = "precipitate"  # Solid forming
 
         # STEP 9: Build final response for frontend
+
+        # For unknown reactions, update visual_effects based on LLM analysis
+        visual_effects = reaction_data.get("visual_effects", [])
+        if triggers is None and visual_effects == ["mixing_observed"]:
+            # LLM detected something - update the visual effects description
+            detected_effects = []
+            if final_triggers["bubbles"]:
+                detected_effects.append("gas_evolution")
+            if final_triggers["gas_smoke"]:
+                detected_effects.append("visible_gas_smoke")
+            if final_triggers["precipitate"]:
+                detected_effects.append("precipitate_forming")
+            if final_triggers["heat"]:
+                detected_effects.append("heat_released")
+            if final_triggers["color_change"]:
+                detected_effects.append("color_change")
+
+            if detected_effects:
+                visual_effects = detected_effects
+
         response = {
             # Chemical equation
             "equation": viz.get("equation") if viz.get("equation") else reaction_data.get("equation", ""),
@@ -247,7 +287,7 @@ class ReactionEngine:
             "ph": reaction_data.get("ph_value", 7),
 
             # Observable changes (color, bubbles, heat, etc.)
-            "symptoms": reaction_data.get("visual_effects", []),
+            "symptoms": visual_effects,
 
             # Type of reaction (acid-base, synthesis, decomposition, etc.)
             "reaction_type": reaction_data.get("reaction_type", "mixture"),
@@ -258,11 +298,17 @@ class ReactionEngine:
             # Color the liquid should turn
             "liquidColor": final_triggers["color_change"] or reaction_data.get("liquid_color", "#FFFFFF33"),
 
-            # Type of particles to show (bubbles, precipitate, etc.)
+            # Type of particles to show (bubbles, precipitate, smoke, etc.)
             "particleType": p_type,
 
-            # Color of the particles
+            # Color of the particles/smoke
             "particleColor": reaction_data.get("particle_color", "#FFFFFF"),
+
+            # Explicit smoke indicator for frontend
+            "showSmoke": final_triggers.get("gas_smoke", False),
+
+            # Smoke color (if different from particle color)
+            "smokeColor": reaction_data.get("particle_color", "#E0E0E0") if final_triggers.get("gas_smoke", False) else None,
 
             # Steps for cascading animation
             "visual_steps": visual_steps,

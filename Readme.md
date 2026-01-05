@@ -16,7 +16,7 @@ An interactive, AI-powered virtual chemistry laboratory that allows students to 
 - **Rule-Based Chemistry Engine**: Accurate stoichiometric calculations and reaction predictions
 - **Cascading Reactions**: Automatically detects and simulates multi-step reactions
 - **PubChem Integration**: Real chemical data including molecular formulas, IUPAC names, and molecular weights
-- **AI-Powered Explanations**: Google Gemini 2.0 Flash generates detailed educational content
+- **AI-Powered Explanations**: LLaMA 3.3 70B generates detailed educational content
 
 ### Educational Content
 
@@ -52,7 +52,7 @@ An interactive, AI-powered virtual chemistry laboratory that allows students to 
 ### APIs & Services
 
 - **PubChem API**: Chemical data and compound information
-- **Google Gemini 2.0 Flash**: AI-powered educational explanations
+- **LLaMA 3.3 70B**: AI-powered educational explanations
 - **PubChemPy**: Python wrapper for PubChem integration
 
 ### Database
@@ -73,7 +73,7 @@ An interactive, AI-powered virtual chemistry laboratory that allows students to 
 
 - Python 3.11 or higher
 - PostgreSQL database
-- Google AI API key ([Get one here](https://makersuite.google.com/app/apikey))
+- APIs: Groq LLaMA 3.3 70B (AI explanations)
 
 ### Local Development Setup
 
@@ -179,7 +179,7 @@ This project is configured for one-click deployment on Railway.
 1. **Fork this repository**
 
 1. **Add environment variables**
-   - `GOOGLE_API_KEY`: Your Google AI API key
+   - `GROQ_API_KEY`: Your Gorq API key
    - `DATABASE_URL`: Auto-configured by Render PostgreSQL
 
 1. **Deploy**
@@ -232,7 +232,7 @@ Copyright (c) 2026 Naveen Samaranayake
 ## Acknowledgments
 
 - **PubChem**: For providing comprehensive chemical data
-- **Google AI**: For Gemini 2.0 Flash API
+- **Groq AI**: LLaMA 3.3 70B (AI explanations)
 - **p5.js Community**: For the amazing creative coding library
 - **Chemistry Education Community**: For feedback and testing
 

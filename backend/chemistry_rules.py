@@ -167,11 +167,12 @@ class ChemistryRules:
                             "bubbles": True,
                             "precipitate": False,
                             "heat": True,
-                            "color_change": "#0000FFAA"
+                            "color_change": "#0000FFAA",
+                            "gas_smoke": True
                         },
                         "liquid_color": "#0000FFAA",
-                        "particle_type": "bubble",
-                        "particle_color": "#FFFFFF"
+                        "particle_type": "smoke",
+                        "particle_color": "#E0E0E0"
                     },
                     "room_dilute": {
                         "equation": "Cu(s) + H₂SO₄(dilute) → No Reaction",
@@ -182,7 +183,8 @@ class ChemistryRules:
                         "animation_triggers": {
                             "bubbles": False,
                             "precipitate": False,
-                            "heat": False
+                            "heat": False,
+                            "gas_smoke": False
                         },
                         "liquid_color": "#FFFFFF11",
                         "particle_type": "none"
@@ -259,10 +261,11 @@ class ChemistryRules:
                             "bubbles": True,
                             "precipitate": False,
                             "color_change": "#FFD700AA",
-                            "heat": True
+                            "heat": True,
+                            "gas_smoke": True
                         },
                         "liquid_color": "#FFD700AA",
-                        "particle_type": "bubble",
+                        "particle_type": "smoke",
                         "particle_color": "#8B4513"
                     },
                     "room_concentrated": {
@@ -275,10 +278,11 @@ class ChemistryRules:
                             "bubbles": True,
                             "precipitate": False,
                             "color_change": "#8B4513AA",
-                            "heat": True
+                            "heat": True,
+                            "gas_smoke": True
                         },
                         "liquid_color": "#8B4513AA",
-                        "particle_type": "bubble",
+                        "particle_type": "smoke",
                         "particle_color": "#8B4513"
                     },
                     "hot_concentrated": {
@@ -291,10 +295,11 @@ class ChemistryRules:
                             "bubbles": True,
                             "precipitate": False,
                             "color_change": "#654321AA",
-                            "heat": True
+                            "heat": True,
+                            "gas_smoke": True
                         },
                         "liquid_color": "#654321AA",
-                        "particle_type": "bubble",
+                        "particle_type": "smoke",
                         "particle_color": "#8B4513"
                     }
                 }
@@ -366,7 +371,13 @@ class ChemistryRules:
         return reaction_entry
     
     def get_default_response(self, ingredients):
-        """Default response when no specific reaction is found."""
+        """Default response when no specific reaction is found.
+
+        Note: This returns None for animation_triggers to signal that
+        the LLM's visual metadata should be used instead of hardcoded values.
+        This allows the AI to intelligently detect gas evolution, precipitates,
+        and other visual effects for reactions not in the database.
+        """
         return {
             "equation": f"Mixture of {', '.join(ingredients)}",
             "products": ingredients,
@@ -374,12 +385,7 @@ class ChemistryRules:
             "ph_change": "neutral",
             "visual_effects": ["mixing_observed"],
             "reaction_type": "mixture",
-            "animation_triggers": {
-                "bubbles": False,
-                "precipitate": False,
-                "color_change": None,
-                "heat": False
-            },
+            "animation_triggers": None,  # Let LLM determine visual effects
             "liquid_color": "#FFFFFF33",
             "particle_type": "none"
         }

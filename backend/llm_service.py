@@ -1,15 +1,14 @@
 """
 LLM Service for Educational Content Generation
-Uses Google Gemini 2.0 Flash for explanations and safety tips (FREE - 1M tokens/day).
-Previously used: Groq LLaMA 3.1 8B, then google.generativeai (deprecated)
-Now uses: Google Gemini 2.0 Flash via google.genai SDK (better chemistry accuracy, completely free)
+Uses Groq LLaMA 3.3 70B for explanations and safety tips (FREE - generous limits).
+Previously used: Google Gemini 2.0 Flash (quota issues)
+Now uses: Groq LLaMA 3.3 70B (fast, accurate, generous free tier)
 """
 
 import os
 import json
 import logging
-from google import genai
-from google.genai import types
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,32 +18,32 @@ logger = logging.getLogger(__name__)
 
 class LLMService:
     """
-    LLM Service using Google Gemini 2.0 Flash (Free tier: 1M tokens/day).
+    LLM Service using Groq LLaMA 3.3 70B (Free tier: 14,400 requests/day).
 
     Benefits:
-    ✓ Latest chemistry knowledge and accuracy
+    ✓ Excellent chemistry knowledge and accuracy
+    ✓ Very fast inference (faster than Gemini)
     ✓ Better stoichiometry understanding
     ✓ Understands concentration-dependent reactions
-    ✓ Free tier is generous (1M tokens/day)
-    ✓ Better safety information generation
-    ✓ Uses stable google.genai SDK (replaces deprecated google.generativeai)
+    ✓ Generous free tier (14,400 requests/day, 7,000 requests/minute)
+    ✓ Great for educational content and safety information
     """
 
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
+        self.api_key = os.getenv("GROQ_API_KEY")
         if self.api_key:
-            self.client = genai.Client(api_key=self.api_key)
-            self.model_name = 'gemini-2.0-flash'
-            logger.info("✓ Using Google Gemini 2.0 Flash (FREE tier)")
+            self.client = Groq(api_key=self.api_key)
+            self.model_name = 'llama-3.3-70b-versatile'
+            logger.info("✓ Using Groq LLaMA 3.3 70B (FREE tier)")
         else:
-            logger.warning("❌ GOOGLE_API_KEY not found. LLM features will be disabled.")
+            logger.warning("❌ GROQ_API_KEY not found. LLM features will be disabled.")
             self.client = None
             self.model_name = None
 
     def generate_educational_content(self, reaction_data, ingredients, temperature='room', concentration='dilute', history=None):
         """
         Generate educational explanation considering reaction history.
-        Uses Google Gemini 2.0 Flash for better chemistry accuracy.
+        Uses Groq LLaMA 3.3 70B for better chemistry accuracy.
         """
         if not self.client:
             logger.warning("LLM client not available, using fallback content")
@@ -53,30 +52,32 @@ class LLMService:
         prompt = self._build_prompt(reaction_data, ingredients, temperature, concentration, history)
 
         try:
-            # Google Gemini API call using google.genai SDK
-            response = self.client.models.generate_content(
+            # Groq API call
+            response = self.client.chat.completions.create(
                 model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.7,
-                    max_output_tokens=600
-                )
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert chemistry education assistant. Provide comprehensive, detailed explanations suitable for students. Always respond with valid JSON only."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.7,
+                max_tokens=1500,
+                response_format={"type": "json_object"}
             )
 
             # Parse JSON from response
-            response_text = response.text
+            response_text = response.choices[0].message.content
 
             # Try to extract JSON from response
             try:
-                # Find JSON in response (sometimes model adds extra text)
-                import re
-                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-                if json_match:
-                    content = json.loads(json_match.group())
-                else:
-                    content = json.loads(response_text)
+                content = json.loads(response_text)
             except json.JSONDecodeError:
-                logger.warning(f"Failed to parse Gemini response as JSON: {response_text}")
+                logger.warning(f"Failed to parse Groq response as JSON: {response_text}")
                 return self._get_fallback_content(reaction_data)
 
             return {
@@ -89,20 +90,21 @@ class LLMService:
                     "precipitate": content.get("precipitate", False),
                     "heat": content.get("heat", False),
                     "color_change": content.get("color_change", None),
+                    "gas_smoke": content.get("gas_smoke", False),
                     "equation": content.get("equation", "")
                 }
             }
 
         except Exception as e:
-            logger.error(f"Error calling Google Gemini API: {e}")
+            logger.error(f"Error calling Groq API: {e}")
             logger.error(f"Details: {str(e)}")
             return self._get_fallback_content(reaction_data)
     
     def _build_prompt(self, reaction_data, ingredients, temperature='room', concentration='dilute', history=None):
         """
-        Build improved prompt for Google Gemini 2.0 Flash with chemistry-specific instructions.
+        Build improved prompt for Groq LLaMA 3.3 70B with chemistry-specific instructions.
 
-        Gemini 2.0 Flash has superior chemistry knowledge, allowing detailed instructions.
+        LLaMA 3.3 70B has excellent chemistry knowledge, allowing detailed instructions.
         """
         history_text = ""
         if history and len(history) > 1:
@@ -118,32 +120,49 @@ REACTION DATA:
 - Observable Effects: {', '.join(reaction_data.get('visual_effects', []))}
 - Final pH: {reaction_data.get('ph_value', 7)}
 
+CRITICAL - VERIFY REACTION VALIDITY:
+BEFORE providing the response, you MUST verify:
+1. Do these chemicals ACTUALLY react under the given conditions?
+2. Are special conditions (heat, concentration, catalyst) required?
+3. Follow theoretical chemistry principles (reactivity series, solubility rules, acid-base theory)
+4. If chemicals DON'T react under these conditions, state that clearly in the explanation
+
 INSTRUCTION - Provide DETAILED Chemistry Education:
-Explain this reaction with sufficient depth and detail. Include:
+Explain what happens when these chemicals are mixed. Include:
+- WHETHER they react or just mix (be accurate!)
 - What is happening at the molecular level
-- Why the reactants combine in this way
+- Why the reactants combine (or don't combine) in this way
 - The role of concentration and temperature
 - What students should observe and why
 - How this relates to broader chemistry concepts
 
 RESPOND WITH VALID JSON ONLY (no extra text before or after):
 {{
-  "explanation": "Comprehensive explanation (4-6 sentences). Start with WHAT happens, then WHY at the molecular/ionic level, then discuss conditions and observable changes. Make it educational and detailed for students learning this concept.",
+  "explanation": "Comprehensive explanation (4-6 sentences). FIRST state if reaction occurs or not. Then explain WHAT happens, WHY at the molecular/ionic level, discuss conditions and observable changes. Be accurate about chemistry.",
   "safety_tips": "Specific, practical safety precautions for these chemicals (2-3 sentences). Explain what hazards exist and what protective measures are needed.",
   "concept": "The chemistry concept name and a detailed description (2-3 sentences). Explain what type of reaction this is, why it's classified that way, and what makes it significant. Example format: 'Redox Reaction - A reaction involving transfer of electrons between reactants, where one substance is oxidized and another is reduced, causing change in oxidation states.'",
   "real_world_example": "A detailed practical application (2-3 sentences). Explain how and why this reaction is used in industry, medicine, or everyday life, and what makes it important.",
-  "bubbles": true or false (gas evolution),
-  "precipitate": true or false (solid formation),
-  "heat": true or false (exothermic process),
-  "color_change": "hex color like #FF0000 or null",
-  "equation": "the balanced chemical equation"
+  "bubbles": true or false (set true ONLY if gas is produced - H₂, CO₂, O₂, etc.),
+  "precipitate": true or false (set true ONLY if insoluble solid forms),
+  "heat": true or false (set true ONLY if reaction is exothermic and releases noticeable heat),
+  "gas_smoke": true or false (set true if visible gas/smoke/vapor is produced - like NO₂ brown gas, Cl₂ yellow-green gas, SO₂, NH₃ vapor, etc.),
+  "color_change": "hex color like #FF0000 or null (final solution color if changed)",
+  "equation": "the balanced chemical equation (or 'No Reaction' if chemicals don't react)"
 }}
+
+VISUAL EFFECTS ACCURACY:
+- "bubbles": true ONLY if gas bubbles form (H₂, CO₂, O₂, etc.)
+- "gas_smoke": true ONLY if colored gas/smoke/vapor is visible (NO₂, Cl₂, SO₂, NH₃, etc.)
+- "precipitate": true ONLY if solid particles form and settle/suspend
+- "heat": true ONLY if reaction releases significant heat (exothermic)
+- Be chemically accurate - don't invent effects that won't happen!
 
 QUALITY REQUIREMENTS:
 - Be thorough and educational, not superficial
-- Use correct chemistry terminology
+- Use correct chemistry terminology and principles
 - Explain the WHY, not just the WHAT
-- Make concepts accessible to students while maintaining accuracy
+- BE ACCURATE - verify reaction actually occurs under these conditions
+- If no reaction occurs, explain why (reactivity, conditions, etc.)
 - Include relevant details about molecular interactions"""
     
     def _get_fallback_content(self, reaction_data):

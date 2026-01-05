@@ -1,15 +1,14 @@
 """
 Chemical Categorization Service using LLM
-Uses Google Gemini 2.0 Flash to categorize chemicals into appropriate categories.
-Previously used: Groq LLaMA 3.1 8B
-Switched to: Google Gemini 2.0 Flash (better chemistry knowledge, free, integrated with explanations)
+Uses Groq open source models for chemical categorization.
+Previously used: Google Gemini 2.0 Flash
+Switched to: Groq LLaMA 3.3 70B (open source, fast, accurate for categorization tasks)
 """
 
 import os
 import json
 import logging
-from google import genai
-from google.genai import types
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,16 +17,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ChemicalCategorizer:
-    """LLM-based chemical categorization service using Google Gemini 2.0 Flash."""
+    """LLM-based chemical categorization service using Groq."""
 
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
+        self.api_key = os.getenv("GROQ_API_KEY")
         if self.api_key:
-            self.client = genai.Client(api_key=self.api_key)
-            self.model = "gemini-2.0-flash"
-            logger.info("✓ Using Google Gemini 2.0 Flash for chemical categorization")
+            self.client = Groq(api_key=self.api_key)
+            self.model = "llama-3.3-70b-versatile"
+            logger.info("✓ Using Groq LLaMA 3.3 70B for chemical categorization")
         else:
-            logger.warning("GOOGLE_API_KEY not found. Categorization will use fallback logic.")
+            logger.warning("GROQ_API_KEY not found. Categorization will use fallback logic.")
             self.client = None
     
     def categorize(self, name, formula, iupac_name=None):
@@ -48,22 +47,24 @@ class ChemicalCategorizer:
         prompt = self._build_prompt(name, formula, iupac_name)
 
         try:
-            response = self.client.models.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                contents=[
-                    types.Content(
-                        role="user",
-                        parts=[types.Part.from_text(prompt)]
-                    )
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a chemistry expert. Categorize chemicals accurately. Respond only with valid JSON."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
                 ],
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    max_output_tokens=1000,
-                    system_instruction="You are a chemistry expert. Categorize chemicals accurately. Respond only with valid JSON."
-                )
+                temperature=0.3,
+                max_tokens=1000,
+                response_format={"type": "json_object"}
             )
 
-            content = json.loads(response.text)
+            content = json.loads(response.choices[0].message.content)
             category = content.get("category", "salts").lower()
             
             # Validate category
