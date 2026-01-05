@@ -1,8 +1,8 @@
 """
 LLM Service for Educational Content Generation
 Uses Groq LLaMA 3.3 70B for explanations and safety tips (FREE - generous limits).
-Previously used: Google Gemini 2.0 Flash (quota issues)
-Now uses: Groq LLaMA 3.3 70B (fast, accurate, generous free tier)
+Previously used: Google Gemini 2.0 Flash (quota issues), ChemLLM (not available on free API)
+Now uses: Groq LLaMA 3.3 70B (fast, accurate, generous free tier, good chemistry knowledge)
 """
 
 import os
@@ -22,18 +22,20 @@ class LLMService:
 
     Benefits:
     ✓ Excellent chemistry knowledge and accuracy
-    ✓ Very fast inference (faster than Gemini)
+    ✓ Very fast inference
     ✓ Better stoichiometry understanding
     ✓ Understands concentration-dependent reactions
     ✓ Generous free tier (14,400 requests/day, 7,000 requests/minute)
     ✓ Great for educational content and safety information
+
+    Note: ChemLLM models not available on free HuggingFace Inference API
     """
 
     def __init__(self):
         self.api_key = os.getenv("GROQ_API_KEY")
         if self.api_key:
             self.client = Groq(api_key=self.api_key)
-            self.model_name = 'llama-3.3-70b-versatile'
+            self.model_name = 'llama-3.1-8b-instant'
             logger.info("✓ Using Groq LLaMA 3.3 70B (FREE tier)")
         else:
             logger.warning("❌ GROQ_API_KEY not found. LLM features will be disabled.")

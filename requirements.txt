@@ -7,3 +7,4 @@ psycopg2-binary
 sqlalchemy
 pubchempy
 gunicorn
+huggingface_hub
