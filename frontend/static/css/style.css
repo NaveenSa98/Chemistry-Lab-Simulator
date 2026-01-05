@@ -64,44 +64,63 @@ header h1 {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     color: var(--accent-color);
-    padding: 8px 18px;
+    padding: 10px 20px;
     border-radius: 12px;
     cursor: pointer;
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    white-space: nowrap;
 }
 
 .inventory-btn:hover {
     background: rgba(0, 242, 255, 0.1);
     box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.inventory-btn:active {
+    transform: translateY(0);
 }
 
 .inventory-menu {
-    position: absolute;
-    top: calc(100% + 15px);
-    left: 0;
-    width: 500px;
-    max-height: 500px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(500px, calc(100vw - 40px));
+    max-height: min(600px, calc(100vh - 100px));
     background: rgba(13, 14, 18, 0.98);
     backdrop-filter: blur(25px);
-    border: 1px solid var(--glass-border);
-    border-radius: 18px;
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
     padding: 0;
-    z-index: 1000;
+    z-index: 10000;
     display: none;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .inventory-menu.active {
-    display: block;
-    animation: fadeInSlide 0.3s ease forwards;
+    display: flex;
+    flex-direction: column;
+    animation: fadeInScale 0.3s ease forwards;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 @keyframes fadeInSlide {
@@ -243,40 +262,169 @@ input:checked+.slider.ice {
     box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
 }
 
+/* Inventory Menu Structure */
+.inventory-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+}
+
+.inventory-menu-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.inventory-close-btn {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-color);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.inventory-close-btn:hover {
+    background: rgba(255, 68, 68, 0.2);
+    border-color: #ff4444;
+    color: #ff6666;
+    transform: rotate(90deg);
+}
+
+.inventory-menu-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.inventory-menu-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.inventory-menu-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.inventory-menu-body::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 10px;
+}
+
+.inventory-menu-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 242, 255, 0.8);
+}
+
+/* Modal Backdrop */
+.inventory-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+}
+
+.inventory-backdrop.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 /* Category Grid */
 .categories-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
     padding: 20px;
 }
 
 .category-item {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 20px;
+    border: 2px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 20px 15px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 12px;
+    min-height: 110px;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(0, 242, 255, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.category-item:hover::before {
+    opacity: 1;
 }
 
 .category-item:hover {
     background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-3px);
+    transform: translateY(-5px) scale(1.02);
     border-color: var(--accent-color);
+    box-shadow: 0 8px 24px rgba(0, 242, 255, 0.2);
+}
+
+.category-item:active {
+    transform: translateY(-2px) scale(1);
 }
 
 .cat-icon {
-    font-size: 2rem;
+    font-size: 2.5rem;
+    transition: transform 0.3s ease;
+    z-index: 1;
+}
+
+.category-item:hover .cat-icon {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .cat-label {
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    text-align: center;
+    z-index: 1;
+    letter-spacing: 0.3px;
 }
 
 /* Category Specific Styles */
@@ -340,40 +488,75 @@ input:checked+.slider.ice {
     gap: 12px;
     padding: 20px;
     overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: thin;
-    scrollbar-color: var(--accent-color) transparent;
+    scrollbar-color: var(--accent-color) rgba(255, 255, 255, 0.05);
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .horizontal-ingredient-grid::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
+}
+
+.horizontal-ingredient-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+    margin: 0 20px;
 }
 
 .horizontal-ingredient-grid::-webkit-scrollbar-thumb {
-    background: var(--accent-color);
+    background: linear-gradient(90deg, var(--accent-color), #7000ff);
     border-radius: 10px;
+    border: 2px solid transparent;
+}
+
+.horizontal-ingredient-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
 }
 
 .ingredient {
     flex: 0 0 auto;
-    min-width: 120px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--glass-border);
-    border-radius: 10px;
-    padding: 12px;
+    min-width: 130px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 12px;
     text-align: center;
     cursor: grab;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.9rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.ingredient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.ingredient:hover::before {
+    left: 100%;
 }
 
 .ingredient:hover {
-    background: rgba(0, 242, 255, 0.2);
-    transform: translateY(-2px);
+    background: rgba(0, 242, 255, 0.15);
+    transform: translateY(-3px) scale(1.05);
     border-color: var(--accent-color);
+    box-shadow: 0 6px 20px rgba(0, 242, 255, 0.3);
 }
 
 .ingredient:active {
     cursor: grabbing;
+    transform: translateY(-1px) scale(1.02);
 }
 
 /* Chemical Category Sections */
@@ -475,6 +658,27 @@ input:checked+.slider.ice {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+.info-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .data-row {
@@ -1246,8 +1450,194 @@ input:checked+.slider:before {
     transform: translateY(0);
 }
 
-/* Responsive adjustments for tutorial */
+/* ===== TOUCH-FRIENDLY MOBILE OPTIMIZATIONS ===== */
+
+/* Better touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase tap targets for touch devices */
+    .inventory-btn,
+    .reset-btn,
+    .try-btn,
+    .tab-btn,
+    .tutorial-start-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .ingredient {
+        min-height: 44px;
+        min-width: 110px;
+    }
+
+    .category-item {
+        min-height: 60px;
+    }
+
+    /* Disable hover effects on touch devices */
+    .ingredient:hover::after {
+        display: none;
+    }
+
+    /* Better touch feedback */
+    .ingredient:active,
+    .try-btn:active,
+    .tab-btn:active,
+    .category-item:active {
+        transform: scale(0.95);
+        transition: transform 0.1s;
+    }
+
+    /* Prevent text selection during drag on mobile */
+    .ingredient,
+    .category-item,
+    .reaction-card {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+}
+
+/* ===== MOBILE RESPONSIVE STYLES ===== */
+
+/* Tablet and below (768px) */
 @media (max-width: 768px) {
+    .app-container {
+        padding: 10px;
+    }
+
+    /* Header responsive */
+    header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .header-left {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+    .inventory-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .controls {
+        justify-content: center;
+    }
+
+    /* Main layout stacks vertically on mobile */
+    main {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Lab bench takes full width */
+    .lab-bench {
+        min-height: 400px;
+        order: 1;
+    }
+
+    /* Sidebar becomes full width */
+    .sidebar {
+        order: 2;
+    }
+
+    /* Inventory menu responsive */
+    .inventory-menu {
+        width: calc(100vw - 20px);
+        max-height: calc(100vh - 60px);
+        border-radius: 16px;
+    }
+
+    .inventory-menu.active {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .inventory-menu-header {
+        padding: 15px;
+    }
+
+    .inventory-menu-title {
+        font-size: 1rem;
+    }
+
+    .inventory-close-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .category-item {
+        padding: 16px 12px;
+        min-height: 100px;
+        gap: 10px;
+    }
+
+    .cat-icon {
+        font-size: 2rem;
+    }
+
+    .cat-label {
+        font-size: 0.85rem;
+    }
+
+    /* Horizontal chemical scroll */
+    .horizontal-ingredient-grid {
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .ingredient {
+        min-width: 100px;
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    /* Lab controls responsive */
+    .lab-controls {
+        max-height: none;
+    }
+
+    /* Info panel and glass card responsive */
+    .info-panel {
+        padding: 15px;
+    }
+
+    .glass-card {
+        padding: 15px;
+    }
+
+    .glass-card h3 {
+        font-size: 1rem;
+    }
+
+    .glass-card h4 {
+        font-size: 0.9rem;
+    }
+
+    /* Example reactions responsive */
+    .example-reactions {
+        padding: 15px;
+    }
+
+    .reaction-cards {
+        max-height: 300px;
+    }
+
+    /* Tutorial responsive */
     .tutorial-content {
         padding: 25px;
         width: 95%;
@@ -1261,6 +1651,7 @@ input:checked+.slider:before {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        padding: 15px;
     }
 
     .tutorial-actions {
@@ -1270,5 +1661,301 @@ input:checked+.slider:before {
 
     .tutorial-start-btn {
         width: 100%;
+    }
+
+    /* Chemical info panel responsive */
+    .chem-info-panel {
+        width: calc(100vw - 40px);
+        max-width: 300px;
+        bottom: 10px;
+        right: 10px;
+        padding: 12px;
+    }
+
+    /* Error/Success banners */
+    .error-banner,
+    .success-banner {
+        max-width: calc(100vw - 40px);
+        font-size: 0.85rem;
+    }
+}
+
+/* Mobile phones (480px and below) */
+@media (max-width: 480px) {
+    .app-container {
+        padding: 8px;
+    }
+
+    header h1 {
+        font-size: 1.2rem;
+    }
+
+    .inventory-btn {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    .reset-btn {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+    }
+
+    /* Lab bench smaller on small phones */
+    .lab-bench {
+        min-height: 300px;
+        border-radius: 15px;
+    }
+
+    /* Inventory menu for small phones */
+    .inventory-menu {
+        width: calc(100vw - 16px);
+        max-height: calc(100vh - 40px);
+        border-radius: 12px;
+    }
+
+    .inventory-menu-header {
+        padding: 12px 15px;
+    }
+
+    .inventory-menu-title {
+        font-size: 0.95rem;
+    }
+
+    .inventory-close-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    /* Single column category grid on small phones */
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .category-item {
+        padding: 14px 16px;
+        flex-direction: row;
+        gap: 15px;
+        justify-content: flex-start;
+        min-height: 70px;
+        text-align: left;
+    }
+
+    .cat-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .cat-label {
+        font-size: 0.9rem;
+        text-align: left;
+    }
+
+    /* Smaller ingredients on mobile */
+    .ingredient {
+        min-width: 105px;
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+
+    .horizontal-ingredient-grid {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    /* Controls more compact */
+    .quantity-selector {
+        padding: 8px;
+    }
+
+    .condition-controls {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .control-group span {
+        font-size: 0.8rem;
+    }
+
+    /* Smaller switch on mobile */
+    .switch {
+        width: 45px;
+        height: 22px;
+    }
+
+    .slider:before {
+        height: 16px;
+        width: 16px;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(23px);
+    }
+
+    /* Example reactions more compact */
+    .example-reactions {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+
+    .example-reactions h2 {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .reaction-cards {
+        max-height: 250px;
+    }
+
+    .reaction-card {
+        padding: 10px;
+    }
+
+    .reaction-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    .reaction-card h4 {
+        font-size: 0.85rem;
+    }
+
+    .reaction-desc {
+        font-size: 0.7rem;
+    }
+
+    /* Tutorial even more compact */
+    .tutorial-content {
+        padding: 20px;
+        max-height: 85vh;
+    }
+
+    .tutorial-content h2 {
+        font-size: 1.3rem;
+    }
+
+    .tutorial-intro {
+        font-size: 0.85rem;
+    }
+
+    .tutorial-step {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .step-number {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .step-content h3 {
+        font-size: 1rem;
+    }
+
+    .step-content p {
+        font-size: 0.85rem;
+    }
+
+    .tutorial-tip {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+
+    .tutorial-start-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    /* Info panel adjustments */
+    .chem-info-panel {
+        width: calc(100vw - 20px);
+        padding: 10px;
+        max-height: 300px;
+        bottom: 5px;
+        right: 5px;
+    }
+
+    .chem-info-panel h4 {
+        font-size: 0.9rem;
+    }
+
+    .chem-info-row {
+        font-size: 0.75rem;
+        padding: 6px 0;
+    }
+
+    /* Panel tabs responsive */
+    .panel-tabs {
+        gap: 5px;
+    }
+
+    .tab-btn {
+        font-size: 0.75rem;
+        padding: 6px 8px;
+    }
+
+    /* Result displays */
+    .equation-display {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+
+    .result-item {
+        padding: 8px;
+    }
+
+    .result-label {
+        font-size: 0.7rem;
+    }
+
+    .result-value {
+        font-size: 0.85rem;
+    }
+
+    /* Tooltips disabled on mobile (interfere with touch) */
+    .ingredient::after {
+        display: none;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .lab-bench {
+        min-height: 250px;
+    }
+
+    main {
+        grid-template-columns: 1fr 300px;
+    }
+
+    .tutorial-content {
+        max-height: 80vh;
+    }
+}
+
+/* Very small screens (320px) */
+@media (max-width: 320px) {
+    header h1 {
+        font-size: 1.1rem;
+    }
+
+    .inventory-btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .lab-bench {
+        min-height: 250px;
+    }
+
+    .ingredient {
+        min-width: 80px;
+        font-size: 0.75rem;
     }
 }
